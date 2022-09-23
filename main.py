@@ -22,6 +22,7 @@ def classify_images(project_dir, input_dir, output_dir):
     input_image_paths = dd_io.get_image_file_paths_recursive(
         input_dir, file_pattern)
     input_image_paths = dd_extra.natural_sorted(input_image_paths)
+    print(f'{len(input_image_paths)} files imported.')
 
     print('Loading model...')
     model = dd_project.load_model_from_project(
