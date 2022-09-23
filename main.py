@@ -42,7 +42,8 @@ def classify_images(project_dir, input_dir, output_dir):
 def classify_image(input_image_path, evaluation_dict, rating_output_dir):
     rating_keys = ['explicit', 'questionable', 'safe']
     ratings = [(key, evaluation_dict[f'rating:{key}']) for key in rating_keys]
-    best_rating = max(ratings, key=lambda x: x[1])
+    sorted_ratings = sorted(ratings, key=lambda x: x[1], reverse=True)
+    best_rating = sorted_ratings[0]
 
     rating_output_dir = os.path.join(rating_output_dir, best_rating[0])
     os.makedirs(rating_output_dir, exist_ok=True)
@@ -50,7 +51,7 @@ def classify_image(input_image_path, evaluation_dict, rating_output_dir):
     output_file = os.path.join(rating_output_dir, image_name)
     shutil.copy2(input_image_path, output_file)
 
-    print(f'{image_name}: {best_rating}')
+    print(f'{image_name}: {sorted_ratings}')
 
 
 if __name__ == '__main__':
