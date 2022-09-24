@@ -45,9 +45,11 @@ def process_images(project_dir: str, input_dir: str, output_dir: str, classifier
         evaluations = evaluate_image(input_image_path, model, tags, 0)
         evaluation_dict = dict(evaluations)
         image_name = os.path.basename(input_image_path)
-        classification = classifier.get_classification(
-            evaluation_dict, image_name)
+        print(f'* {image_name}')
+        classification = classifier.get_classification(evaluation_dict)
+        print(f'Class: {classification}')
         copy_image(input_image_path, output_dir, classification)
+        print()
 
 
 def copy_image(input_image_path: str, output_dir: str, classification: str):

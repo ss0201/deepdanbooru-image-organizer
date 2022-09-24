@@ -3,16 +3,16 @@ from classifier import Classifier
 
 
 class DefaultClassifier(Classifier):
-    def get_classification(self, evaluation_dict, image_name):
+    def get_classification(self, evaluation_dict):
         cls = Class()
 
         explicit_keys = [Keyword.NUDE]
-        if self.contains_filtered_keys(explicit_keys, evaluation_dict, image_name):
+        if self.contains_filtered_keys(explicit_keys, evaluation_dict):
             cls.try_set(Keyword.EXPLICIT)
 
         questionable_keys = [Keyword.SWIMSUIT,
                              Keyword.BIKINI, Keyword.UNDERWEAR, Keyword.LEOTARD, Keyword.ASS]
-        if self.contains_filtered_keys(questionable_keys, evaluation_dict, image_name):
+        if self.contains_filtered_keys(questionable_keys, evaluation_dict):
             cls.try_set(Keyword.QUESTIONABLE)
 
         rating_keys = [Keyword.EXPLICIT, Keyword.QUESTIONABLE, Keyword.SAFE]
@@ -22,7 +22,7 @@ class DefaultClassifier(Classifier):
             RatingEvaluation(key, evaluation_dict[f'rating:{key}']) for key in rating_keys]
         sorted_ratings = sorted(
             ratings, key=lambda x: x.reliability, reverse=True)
-        print(f'{image_name}: {sorted_ratings}')
+        print(sorted_ratings)
 
         best_rating = sorted_ratings[0]
         if best_rating.reliability < 0.5:
@@ -32,11 +32,11 @@ class DefaultClassifier(Classifier):
 
         return cls.value
 
-    def contains_filtered_keys(self, keys, evaluation_dict, image_name):
+    def contains_filtered_keys(self, keys, evaluation_dict):
         for key in keys:
             reliability = evaluation_dict[key]
             if reliability > 0.5:
-                print(f'{image_name}: \'{key}\' {reliability}')
+                print(f'\'{key}\' {reliability}')
                 return True
         return False
 
