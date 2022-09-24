@@ -3,6 +3,7 @@ import shutil
 import os
 from deepdanbooru import io as dd_io, extra as dd_extra, project as dd_project
 from deepdanbooru.commands.evaluate import evaluate_image
+from default_classifier import DefaultClassifier
 
 
 def main():
@@ -13,10 +14,12 @@ def main():
     parser.add_argument('output_dir')
     args = parser.parse_args()
 
-    classify_images(args.project_dir, args.input_dir, args.output_dir)
+    classifier = DefaultClassifier()
+    process_images(args.project_dir, args.input_dir,
+                   args.output_dir, classifier)
 
 
-def classify_images(project_dir, input_dir, output_dir):
+def process_images(project_dir, input_dir, output_dir, classifier):
     print(f'Importing images from {input_dir}...')
     file_pattern = '*.[Pp][Nn][Gg],*.[Jj][Pp][Gg],*.[Jj][Pp][Ee][Gg],*.[Gg][Ii][Ff]'
     input_image_paths = dd_io.get_image_file_paths_recursive(
@@ -37,17 +40,9 @@ def classify_images(project_dir, input_dir, output_dir):
         evaluations = evaluate_image(input_image_path, model, tags, 0)
         evaluation_dict = dict(evaluations)
         image_name = os.path.basename(input_image_path)
-        classification = get_classification(evaluation_dict, image_name)
+        classification = classifier.get_classification(
+            evaluation_dict, image_name)
         copy_image(input_image_path, output_dir, classification)
-
-
-def get_classification(evaluation_dict, image_name):
-    rating_keys = ['explicit', 'questionable', 'safe']
-    ratings = [(key, evaluation_dict[f'rating:{key}']) for key in rating_keys]
-    sorted_ratings = sorted(ratings, key=lambda x: x[1], reverse=True)
-    print(f'{image_name}: {sorted_ratings}')
-    best_rating = sorted_ratings[0]
-    return best_rating[0]
 
 
 def copy_image(input_image_path, output_dir, classification):
