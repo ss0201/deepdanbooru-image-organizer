@@ -3,7 +3,7 @@ from classifier import Classifier
 
 
 class DefaultClassifier(Classifier):
-    def get_classification(self, evaluation_dict):
+    def get_classification(self, evaluation_dict: dict[str, int]) -> str:
         cls = Class()
 
         explicit_keys = [Keyword.NUDE]
@@ -32,7 +32,7 @@ class DefaultClassifier(Classifier):
 
         return cls.value
 
-    def contains_filtered_keys(self, keys, evaluation_dict):
+    def contains_filtered_keys(self, keys: list[str], evaluation_dict: dict[str, int]) -> bool:
         for key in keys:
             reliability = evaluation_dict[key]
             if reliability > 0.5:

@@ -13,18 +13,19 @@ def main():
     parser.add_argument('project_dir')
     parser.add_argument('input_dir')
     parser.add_argument('output_dir')
+    parser.add_argument('--dry-run', action='store_true')
     args = parser.parse_args()
 
     classifier = get_classifier()
     process_images(args.project_dir, args.input_dir,
-                   args.output_dir, classifier)
+                   args.output_dir, args.dry_run, classifier)
 
 
 def get_classifier() -> Classifier:
     return DefaultClassifier()
 
 
-def process_images(project_dir: str, input_dir: str, output_dir: str, classifier: Classifier):
+def process_images(project_dir: str, input_dir: str, output_dir: str, dry_run: bool, classifier: Classifier):
     print(f'Importing images from {input_dir}...')
     file_pattern = '*.[Pp][Nn][Gg],*.[Jj][Pp][Gg],*.[Jj][Pp][Ee][Gg],*.[Gg][Ii][Ff]'
     input_image_paths = dd_io.get_image_file_paths_recursive(
@@ -48,7 +49,8 @@ def process_images(project_dir: str, input_dir: str, output_dir: str, classifier
         print(f'* {image_name}')
         classification = classifier.get_classification(evaluation_dict)
         print(f'Class: {classification}')
-        copy_image(input_image_path, output_dir, classification)
+        if not dry_run:
+            copy_image(input_image_path, output_dir, classification)
         print()
 
 
