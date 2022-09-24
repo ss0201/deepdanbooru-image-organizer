@@ -53,9 +53,7 @@ def get_classification(evaluation_dict, image_name):
 def copy_image(input_image_path, output_dir, classification):
     output_class_dir = os.path.join(output_dir, classification)
     os.makedirs(output_class_dir, exist_ok=True)
-    output_file = os.path.join(
-        output_class_dir, os.path.basename(input_image_path))
-    shutil.copy2(input_image_path, output_file)
+    shutil.copy2(input_image_path, output_class_dir)
 
 
 if __name__ == '__main__':
