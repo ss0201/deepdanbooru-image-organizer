@@ -36,22 +36,26 @@ def classify_images(project_dir, input_dir, output_dir):
     for input_image_path in input_image_paths:
         evaluations = evaluate_image(input_image_path, model, tags, 0)
         evaluation_dict = dict(evaluations)
-        classify_image(input_image_path, evaluation_dict, output_dir)
+        image_name = os.path.basename(input_image_path)
+        classification = get_classification(evaluation_dict, image_name)
+        copy_image(input_image_path, output_dir, classification)
 
 
-def classify_image(input_image_path, evaluation_dict, rating_output_dir):
+def get_classification(evaluation_dict, image_name):
     rating_keys = ['explicit', 'questionable', 'safe']
     ratings = [(key, evaluation_dict[f'rating:{key}']) for key in rating_keys]
     sorted_ratings = sorted(ratings, key=lambda x: x[1], reverse=True)
-    best_rating = sorted_ratings[0]
-
-    rating_output_dir = os.path.join(rating_output_dir, best_rating[0])
-    os.makedirs(rating_output_dir, exist_ok=True)
-    image_name = os.path.basename(input_image_path)
-    output_file = os.path.join(rating_output_dir, image_name)
-    shutil.copy2(input_image_path, output_file)
-
     print(f'{image_name}: {sorted_ratings}')
+    best_rating = sorted_ratings[0]
+    return best_rating[0]
+
+
+def copy_image(input_image_path, output_dir, classification):
+    output_class_dir = os.path.join(output_dir, classification)
+    os.makedirs(output_class_dir, exist_ok=True)
+    output_file = os.path.join(
+        output_class_dir, os.path.basename(input_image_path))
+    shutil.copy2(input_image_path, output_file)
 
 
 if __name__ == '__main__':
