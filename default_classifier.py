@@ -1,3 +1,4 @@
+from collections import namedtuple
 from classifier import Classifier
 
 
@@ -15,12 +16,19 @@ class DefaultClassifier(Classifier):
             cls.try_set(Keyword.QUESTIONABLE)
 
         rating_keys = [Keyword.EXPLICIT, Keyword.QUESTIONABLE, Keyword.SAFE]
+        RatingEvaluation = namedtuple(
+            'RatingEvaluation', ['rating_key', 'reliability'])
         ratings = [
-            (key, evaluation_dict[f'rating:{key}']) for key in rating_keys]
-        sorted_ratings = sorted(ratings, key=lambda x: x[1], reverse=True)
+            RatingEvaluation(key, evaluation_dict[f'rating:{key}']) for key in rating_keys]
+        sorted_ratings = sorted(
+            ratings, key=lambda x: x.reliability, reverse=True)
         print(f'{image_name}: {sorted_ratings}')
+
         best_rating = sorted_ratings[0]
-        cls.try_set(best_rating[0])
+        if best_rating.reliability < 0.5:
+            cls.try_set(Keyword.UNKNOWN)
+        else:
+            cls.try_set(best_rating.rating_key)
 
         return cls.value
 
@@ -37,6 +45,7 @@ class Keyword:
     EXPLICIT = 'explicit'
     QUESTIONABLE = 'questionable'
     SAFE = 'safe'
+    UNKNOWN = 'unknown'
     NUDE = 'nude'
     SWIMSUIT = 'swimsuit'
     BIKINI = 'bikini'
@@ -46,13 +55,14 @@ class Keyword:
 
 
 class Class:
-    value = Keyword.SAFE
+    value = Keyword.UNKNOWN
     CLASS_PRIORITY = {
         Keyword.EXPLICIT: 1,
         Keyword.QUESTIONABLE: 2,
         Keyword.SAFE: 3,
+        Keyword.UNKNOWN: 4,
     }
 
-    def try_set(self, value):
+    def try_set(self, value: str):
         if Class.CLASS_PRIORITY[value] < Class.CLASS_PRIORITY[self.value]:
             self.value = value
