@@ -1,11 +1,10 @@
 import argparse
 import graphviz
 import os
-import dd_adapter
 import numpy as np
 import pandas as pd
+from util import dd_adapter
 from sklearn import tree
-from sqlalchemy import create_engine
 
 CLASS_COLUMN = 'class'
 
@@ -15,7 +14,7 @@ def main():
         description='Count tags used in images.')
     parser.add_argument('project_dir')
     parser.add_argument('input_dirs', nargs='+')
-    parser.add_argument('--output_dir', default='.')
+    parser.add_argument('--output', default='.',  dest='output_dir')
     args = parser.parse_args()
 
     print('Creating dataframe...')

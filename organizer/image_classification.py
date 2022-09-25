@@ -1,9 +1,8 @@
 import argparse
-import dd_adapter
 import shutil
 import os
-from classifier import Classifier
-from default_classifier import DefaultClassifier
+from util import dd_adapter
+from classifiers import Classifier, DefaultClassifier
 
 
 def main():

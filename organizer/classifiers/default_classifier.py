@@ -1,5 +1,5 @@
 from collections import namedtuple
-from classifier import Classifier
+from .classifier import Classifier
 
 
 class DefaultClassifier(Classifier):
