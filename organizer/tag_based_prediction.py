@@ -19,7 +19,7 @@ def main():
     args = parser.parse_args()
 
     print('Creating dataframe...')
-    tags = list(set(EXPLICIT_TAGS + QUESTIONABLE_TAGS))
+    tags = list(set(EXPLICIT_TAGS + QUESTIONABLE_TAGS + SAFE_TAGS))
     df = create_dataframe(args.project_dir, args.input_dirs, tags)
     print(df)
     output_dataframe(df, args.output_dir)
