@@ -53,8 +53,12 @@ def create_dataframe(project_dir: str, image_dirs: list[str], tags: list[str]) -
                 image_path, model, tags, 0)
             row = [image_name, classification] + [x[1] for x in evaluations]
             rows = np.append(rows, [row], axis=0)
-    return pd.DataFrame(rows[:, 1:], index=rows[:, 0],
-                        columns=[CLASS_COLUMN] + tags)
+
+    df = pd.DataFrame(rows[:, 1:], index=rows[:, 0],
+                      columns=[CLASS_COLUMN] + tags)
+    df: pd.DataFrame = df.apply(pd.to_numeric, errors='ignore')
+    df = df.astype({'class': pd.StringDtype()})
+    return df
 
 
 def output_dataframe(df: pd.DataFrame, output_dir: str) -> None:
