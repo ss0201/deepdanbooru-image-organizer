@@ -12,7 +12,7 @@ CLASS_COLUMN = 'class'
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Count tags used in images.')
+        description='Predict classification based on tags.')
     parser.add_argument('project_dir')
     parser.add_argument('input_dirs', nargs='+')
     parser.add_argument('--output', default='.',  dest='output_dir')
