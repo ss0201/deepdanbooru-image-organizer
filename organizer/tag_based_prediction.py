@@ -20,6 +20,7 @@ def main():
     parser.add_argument('--dataframe', required=False)
     parser.add_argument('--max-depth', type=int, required=False)
     parser.add_argument('--min-leaf', type=int, required=False)
+    parser.add_argument('--ccp-alpha', type=float, required=False)
 
     args = parser.parse_args()
 
@@ -34,7 +35,7 @@ def main():
 
     print('Creating decision tree...')
     classifier = create_decision_tree(
-        df, args.max_depth, args.min_leaf)
+        df, args.max_depth, args.min_leaf, args.ccp_alpha)
     output_decision_tree(classifier, df, args.output_dir)
 
     print('Done.')
@@ -69,9 +70,9 @@ def output_dataframe(df: pd.DataFrame, output_dir: str) -> None:
     df.to_pickle(os.path.join(output_dir, 'dataframe.pkl'))
 
 
-def create_decision_tree(df: pd.DataFrame, max_depth: int, min_samples_leaf: int) -> tree.DecisionTreeClassifier:
+def create_decision_tree(df: pd.DataFrame, max_depth: int, min_samples_leaf: int, ccp_alpha: float) -> tree.DecisionTreeClassifier:
     classifier = tree.DecisionTreeClassifier(
-        max_depth=max_depth, min_samples_leaf=min_samples_leaf)
+        max_depth=max_depth, min_samples_leaf=min_samples_leaf, ccp_alpha=ccp_alpha)
     return classifier.fit(df.drop(columns=[CLASS_COLUMN]).to_numpy(), df[CLASS_COLUMN])
 
 
