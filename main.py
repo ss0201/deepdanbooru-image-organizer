@@ -1,8 +1,7 @@
 import argparse
+import dd_adapter
 import shutil
 import os
-from deepdanbooru import io as dd_io, extra as dd_extra, project as dd_project
-from deepdanbooru.commands.evaluate import evaluate_image
 from classifier import Classifier
 from default_classifier import DefaultClassifier
 
@@ -25,25 +24,14 @@ def get_classifier() -> Classifier:
     return DefaultClassifier()
 
 
-def process_images(project_dir: str, input_dir: str, output_dir: str, dry_run: bool, classifier: Classifier):
-    print(f'Importing images from {input_dir}...')
-    file_pattern = '*.[Pp][Nn][Gg],*.[Jj][Pp][Gg],*.[Jj][Pp][Ee][Gg],*.[Gg][Ii][Ff]'
-    input_image_paths = dd_io.get_image_file_paths_recursive(
-        input_dir, file_pattern)
-    input_image_paths = dd_extra.natural_sorted(input_image_paths)
-    print(f'{len(input_image_paths)} files imported.')
-
-    print('Loading model...')
-    model = dd_project.load_model_from_project(
-        project_dir, compile_model=False
-    )
-
-    print('Loading tags...')
-    tags = dd_project.load_tags_from_project(project_dir)
+def process_images(project_dir: str, input_dir: str, output_dir: str, dry_run: bool, classifier: Classifier) -> None:
+    model, tags, input_image_paths = dd_adapter.load_images_and_project(
+        project_dir, input_dir, True)
 
     print('Evaluating...')
     for input_image_path in input_image_paths:
-        evaluations = evaluate_image(input_image_path, model, tags, 0)
+        evaluations = dd_adapter.evaluate_image(
+            input_image_path, model, tags, 0)
         evaluation_dict = dict(evaluations)
         image_name = os.path.basename(input_image_path)
         print(f'* {image_name}')
