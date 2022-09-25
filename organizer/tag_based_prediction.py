@@ -1,4 +1,5 @@
 import argparse
+from typing import Iterable
 import graphviz
 import os
 import numpy as np
@@ -26,7 +27,7 @@ def main():
         df: pd.DataFrame = pd.read_pickle(args.dataframe)
     else:
         print('Creating dataframe...')
-        tags = list(set(EXPLICIT_TAGS + QUESTIONABLE_TAGS + SAFE_TAGS))
+        tags = sorted(set(EXPLICIT_TAGS + QUESTIONABLE_TAGS + SAFE_TAGS))
         df = create_dataframe(args.project_dir, args.input_dirs, tags)
         print(df)
         output_dataframe(df, args.output_dir)
@@ -39,11 +40,11 @@ def main():
     print('Done.')
 
 
-def create_dataframe(project_dir: str, image_dirs: list[str], tags: list[str]) -> pd.DataFrame:
-    model, _ = dd_adapter.load_project(project_dir, True)
+def create_dataframe(project_dir: str, image_dirs: list[str], limited_tags: Iterable[str]) -> pd.DataFrame:
+    model, tags = dd_adapter.load_project(project_dir, True)
 
     print('Predicting tags...')
-    rows = np.empty((0, 2 + len(tags)), dtype=str)
+    rows = np.empty((0, 2 + len(limited_tags)))
     for image_dir in image_dirs:
         classification = os.path.basename(image_dir)
         image_paths = dd_adapter.load_images(image_dir, True)
@@ -51,11 +52,14 @@ def create_dataframe(project_dir: str, image_dirs: list[str], tags: list[str]) -
             image_name = os.path.basename(image_path)
             evaluations = dd_adapter.evaluate_image(
                 image_path, model, tags, 0)
-            row = [image_name, classification] + [x[1] for x in evaluations]
+            limited_evaluations = sorted(
+                filter(lambda x: x[0] in limited_tags, evaluations))
+            tag_reliabilities = [x[1] for x in limited_evaluations]
+            row = [image_name, classification] + tag_reliabilities
             rows = np.append(rows, [row], axis=0)
 
     df = pd.DataFrame(rows[:, 1:], index=rows[:, 0],
-                      columns=[CLASS_COLUMN] + tags)
+                      columns=[CLASS_COLUMN] + limited_tags)
     df: pd.DataFrame = df.apply(pd.to_numeric, errors='ignore')
     df = df.astype({'class': pd.StringDtype()})
     return df
