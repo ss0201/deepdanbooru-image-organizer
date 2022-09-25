@@ -25,7 +25,7 @@ def get_classifier() -> Classifier:
 
 
 def process_images(project_dir: str, input_dir: str, output_dir: str, dry_run: bool, classifier: Classifier) -> None:
-    model, tags, input_image_paths = dd_adapter.load_images_and_project(
+    model, tags, input_image_paths = dd_adapter.load_project_and_images(
         project_dir, input_dir, True)
 
     print('Evaluating...')
