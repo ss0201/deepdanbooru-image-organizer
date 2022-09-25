@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from util import dd_adapter
 from sklearn import tree
+from util.frequent_safety_tags import *
 
 CLASS_COLUMN = 'class'
 
@@ -18,7 +19,8 @@ def main():
     args = parser.parse_args()
 
     print('Creating dataframe...')
-    df = create_dataframe(args.project_dir, args.input_dirs)
+    tags = list(set(EXPLICIT_TAGS + QUESTIONABLE_TAGS))
+    df = create_dataframe(args.project_dir, args.input_dirs, tags)
     print(df)
     output_dataframe(df, args.output_dir)
 
@@ -27,8 +29,8 @@ def main():
     output_decision_tree(classifier, df, args.output_dir)
 
 
-def create_dataframe(project_dir: str, image_dirs: list[str]) -> pd.DataFrame:
-    model, tags = dd_adapter.load_project(project_dir, True)
+def create_dataframe(project_dir: str, image_dirs: list[str], tags: list[str]) -> pd.DataFrame:
+    model, _ = dd_adapter.load_project(project_dir, True)
 
     print('Predicting tags...')
     rows = np.empty((0, 2 + len(tags)), dtype=str)
