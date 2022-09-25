@@ -5,6 +5,7 @@ import dd_adapter
 import numpy as np
 import pandas as pd
 from sklearn import tree
+from sqlalchemy import create_engine
 
 CLASS_COLUMN = 'class'
 
@@ -20,6 +21,7 @@ def main():
     print('Creating dataframe...')
     df = create_dataframe(args.project_dir, args.input_dirs)
     print(df)
+    output_dataframe(df, args.output_dir)
 
     print('Creating decision tree...')
     classifier = create_decision_tree(df)
@@ -42,6 +44,10 @@ def create_dataframe(project_dir: str, image_dirs: list[str]) -> pd.DataFrame:
             rows = np.append(rows, [row], axis=0)
     return pd.DataFrame(rows[:, 1:], index=rows[:, 0],
                         columns=[CLASS_COLUMN] + tags)
+
+
+def output_dataframe(df: pd.DataFrame, output_dir: str) -> None:
+    df.to_pickle(os.path.join(output_dir, 'dataframe.pkl'))
 
 
 def create_decision_tree(df: pd.DataFrame) -> tree.DecisionTreeClassifier:
