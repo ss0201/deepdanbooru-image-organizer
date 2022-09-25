@@ -72,12 +72,12 @@ def output_dataframe(df: pd.DataFrame, output_dir: str) -> None:
 def create_decision_tree(df: pd.DataFrame, max_depth: int, min_samples_leaf: int) -> tree.DecisionTreeClassifier:
     classifier = tree.DecisionTreeClassifier(
         max_depth=max_depth, min_samples_leaf=min_samples_leaf)
-    return classifier.fit(df.drop([CLASS_COLUMN], axis=1).to_numpy(), df[CLASS_COLUMN])
+    return classifier.fit(df.drop(columns=[CLASS_COLUMN]).to_numpy(), df[CLASS_COLUMN])
 
 
 def output_decision_tree(classifier: tree.DecisionTreeClassifier, df: pd.DataFrame, output_dir: str):
     dot_data = tree.export_graphviz(
-        classifier, feature_names=df.columns.drop(CLASS_COLUMN), class_names=df[CLASS_COLUMN].unique(), filled=True)
+        classifier, feature_names=df.columns.drop(CLASS_COLUMN), class_names=classifier.classes_, filled=True, special_characters=True)
     graph = graphviz.Source(dot_data)
     graph.render(outfile=os.path.join(
         output_dir, 'decision_tree.png'), cleanup=True)
