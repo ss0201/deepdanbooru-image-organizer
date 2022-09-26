@@ -1,5 +1,6 @@
 from collections import namedtuple
-from .classifier import Classifier
+
+from organizer.classifiers.classifier import Classifier
 
 
 class DefaultClassifier(Classifier):
@@ -10,18 +11,23 @@ class DefaultClassifier(Classifier):
         if self.contains_filtered_keys(explicit_keys, evaluation_dict):
             cls.try_set(Keyword.EXPLICIT)
 
-        questionable_keys = [Keyword.SWIMSUIT,
-                             Keyword.BIKINI, Keyword.UNDERWEAR, Keyword.LEOTARD, Keyword.ASS]
+        questionable_keys = [
+            Keyword.SWIMSUIT,
+            Keyword.BIKINI,
+            Keyword.UNDERWEAR,
+            Keyword.LEOTARD,
+            Keyword.ASS,
+        ]
         if self.contains_filtered_keys(questionable_keys, evaluation_dict):
             cls.try_set(Keyword.QUESTIONABLE)
 
         rating_keys = [Keyword.EXPLICIT, Keyword.QUESTIONABLE, Keyword.SAFE]
-        RatingEvaluation = namedtuple(
-            'RatingEvaluation', ['rating_key', 'reliability'])
+        RatingEvaluation = namedtuple("RatingEvaluation", ["rating_key", "reliability"])
         ratings = [
-            RatingEvaluation(key, evaluation_dict[f'rating:{key}']) for key in rating_keys]
-        sorted_ratings = sorted(
-            ratings, key=lambda x: x.reliability, reverse=True)
+            RatingEvaluation(key, evaluation_dict[f"rating:{key}"])
+            for key in rating_keys
+        ]
+        sorted_ratings = sorted(ratings, key=lambda x: x.reliability, reverse=True)
         print(sorted_ratings)
 
         best_rating = sorted_ratings[0]
@@ -32,26 +38,28 @@ class DefaultClassifier(Classifier):
 
         return cls.value
 
-    def contains_filtered_keys(self, keys: list[str], evaluation_dict: dict[str, int]) -> bool:
+    def contains_filtered_keys(
+        self, keys: list[str], evaluation_dict: dict[str, int]
+    ) -> bool:
         for key in keys:
             reliability = evaluation_dict[key]
             if reliability > 0.5:
-                print(f'\'{key}\' {reliability}')
+                print(f"'{key}' {reliability}")
                 return True
         return False
 
 
 class Keyword:
-    EXPLICIT = 'explicit'
-    QUESTIONABLE = 'questionable'
-    SAFE = 'safe'
-    UNKNOWN = 'unknown'
-    NUDE = 'nude'
-    SWIMSUIT = 'swimsuit'
-    BIKINI = 'bikini'
-    UNDERWEAR = 'underwear'
-    LEOTARD = 'leotard'
-    ASS = 'ass'
+    EXPLICIT = "explicit"
+    QUESTIONABLE = "questionable"
+    SAFE = "safe"
+    UNKNOWN = "unknown"
+    NUDE = "nude"
+    SWIMSUIT = "swimsuit"
+    BIKINI = "bikini"
+    UNDERWEAR = "underwear"
+    LEOTARD = "leotard"
+    ASS = "ass"
 
 
 class Class:
