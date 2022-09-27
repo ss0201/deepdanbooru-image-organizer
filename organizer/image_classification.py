@@ -33,7 +33,7 @@ def get_classifier(
     if model is None:
         return DefaultClassifier()
 
-    if model == "decision_tree":
+    if model == "tree":
         return DecisionTreeClassifier(model_paths[0])
     if model == "dnn":
         return DnnClassifier(model_paths)
