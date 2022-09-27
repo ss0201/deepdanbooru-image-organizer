@@ -1,11 +1,11 @@
 import argparse
 import os
 import shutil
-from pathlib import Path
 from typing import Union
 
 from classifiers import Classifier, DefaultClassifier
 from classifiers.decision_tree_classifier import DecisionTreeClassifier
+from classifiers.dnn_classifier import DnnClassifier
 from util import dd_adapter
 
 
@@ -17,24 +17,28 @@ def main():
     parser.add_argument("input_dir")
     parser.add_argument("output_dir")
     parser.add_argument("--model", required=False)
+    parser.add_argument("--model-paths", nargs="+", required=False)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
-    classifier = get_classifier(args.model)
+    classifier = get_classifier(args.model, args.model_paths)
     process_images(
         args.project_dir, args.input_dir, args.output_dir, args.dry_run, classifier
     )
 
 
-def get_classifier(model: Union[str, None]) -> Classifier:
+def get_classifier(
+    model: Union[str, None], model_paths: Union[list[str], None]
+) -> Classifier:
     if model is None:
         return DefaultClassifier()
 
-    model_name = Path(model).stem
-    if model_name == "decision_tree":
-        return DecisionTreeClassifier(model)
+    if model == "decision_tree":
+        return DecisionTreeClassifier(model_paths[0])
+    if model == "dnn":
+        return DnnClassifier(model_paths)
 
-    raise Exception(f"Invalid model: {model}")
+    raise Exception(f"Invalid model: {model}.")
 
 
 def process_images(

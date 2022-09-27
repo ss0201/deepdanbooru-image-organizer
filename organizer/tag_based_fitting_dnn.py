@@ -35,19 +35,20 @@ def main():
         print(df)
         dataframe.export(df, args.output_dir)
 
-    model = create_dnn_model(df, FREQUENT_SAFETY_TAGS)
-    export_model(model, args.output_dir)
+    classes = df[CLASS_COLUMN].unique().tolist()
+    model = create_dnn_model(df, FREQUENT_SAFETY_TAGS, classes)
+    export_model(model, classes, args.output_dir)
 
     print("Done.")
 
 
-def create_dnn_model(df: pd.DataFrame, tags: Iterable[str]) -> tf.keras.Model:
-    num_classes = df[CLASS_COLUMN].unique().size
-
+def create_dnn_model(
+    df: pd.DataFrame, tags: Iterable[str], classes: list[str]
+) -> tf.keras.Model:
     val_df = df.sample(frac=0.2)
     train_df = df.drop(val_df.index)
-    train_ds = dataframe_to_dataset(train_df, num_classes)
-    val_ds = dataframe_to_dataset(val_df, num_classes)
+    train_ds = dataframe_to_dataset(train_df, classes)
+    val_ds = dataframe_to_dataset(val_df, classes)
     train_ds = train_ds.batch(32)
     val_ds = val_ds.batch(32)
 
@@ -62,18 +63,18 @@ def create_dnn_model(df: pd.DataFrame, tags: Iterable[str]) -> tf.keras.Model:
 
     x = layers.Dense(32, activation="relu")(all_features)
     x = layers.Dropout(0.5)(x)
-    output = layers.Dense(num_classes, activation="softmax")(x)
+    output = layers.Dense(len(classes), activation="softmax")(x)
     model = keras.Model(all_inputs, output)
     model.compile("adam", "binary_crossentropy", metrics=["accuracy"])
     model.fit(train_ds, epochs=50, validation_data=val_ds)
     return model
 
 
-def dataframe_to_dataset(df: pd.DataFrame, num_classes):
+def dataframe_to_dataset(df: pd.DataFrame, classes: list[str]):
     df = df.copy()
     labels = df.pop("class")
-    labels = [{"explicit": 2, "questionable": 1, "safe": 0}[x] for x in labels]
-    labels = tf.keras.utils.to_categorical(labels, num_classes=num_classes)
+    labels = [classes.index(x) for x in labels]
+    labels = tf.keras.utils.to_categorical(labels, num_classes=len(classes))
     ds = tf.data.Dataset.from_tensor_slices((dict(df), labels))
     ds = ds.shuffle(buffer_size=len(df))
     return ds
@@ -105,8 +106,10 @@ def encode_categorical_feature(feature, name, dataset, is_string):
     return encoded_feature
 
 
-def export_model(model: tf.keras.Model, output_dir: str):
+def export_model(model: tf.keras.Model, classes: Iterable[str], output_dir: str):
     model.save(os.path.join(output_dir, "dnn.h5"))
+    with open(os.path.join(output_dir, "dnn_class.txt"), "w") as f:
+        f.writelines(classes)
 
 
 if __name__ == "__main__":
