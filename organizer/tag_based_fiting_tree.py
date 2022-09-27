@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn import tree
 
 from data import dataframe
-from util.frequent_safety_tags import EXPLICIT_TAGS, QUESTIONABLE_TAGS, SAFE_TAGS
+from util.frequent_safety_tags import FREQUENT_SAFETY_TAGS
 
 CLASS_COLUMN = "class"
 
@@ -26,13 +26,13 @@ def main():
 
     args = parser.parse_args()
 
-    tags = sorted(set(EXPLICIT_TAGS + QUESTIONABLE_TAGS + SAFE_TAGS))
-
     if args.dataframe:
         df: pd.DataFrame = pd.read_pickle(args.dataframe)
     else:
         print("Creating dataframe...")
-        df = dataframe.create(args.project_dir, args.input_dirs, tags, CLASS_COLUMN)
+        df = dataframe.create(
+            args.project_dir, args.input_dirs, FREQUENT_SAFETY_TAGS, CLASS_COLUMN
+        )
         print(df)
         dataframe.export(df, args.output_dir)
 

@@ -9,7 +9,7 @@ from keras.layers import IntegerLookup, Normalization, StringLookup
 from tensorflow import keras
 
 from data import dataframe
-from util.frequent_safety_tags import EXPLICIT_TAGS, QUESTIONABLE_TAGS, SAFE_TAGS
+from util.frequent_safety_tags import FREQUENT_SAFETY_TAGS
 
 CLASS_COLUMN = "class"
 
@@ -25,17 +25,17 @@ def main():
 
     args = parser.parse_args()
 
-    tags = sorted(set(EXPLICIT_TAGS + QUESTIONABLE_TAGS + SAFE_TAGS))
-
     if args.dataframe:
         df: pd.DataFrame = pd.read_pickle(args.dataframe)
     else:
         print("Creating dataframe...")
-        df = dataframe.create(args.project_dir, args.input_dirs, tags, CLASS_COLUMN)
+        df = dataframe.create(
+            args.project_dir, args.input_dirs, FREQUENT_SAFETY_TAGS, CLASS_COLUMN
+        )
         print(df)
         dataframe.export(df, args.output_dir)
 
-    model = create_dnn_model(df, tags)
+    model = create_dnn_model(df, FREQUENT_SAFETY_TAGS)
     export_model(model, args.output_dir)
 
     print("Done.")

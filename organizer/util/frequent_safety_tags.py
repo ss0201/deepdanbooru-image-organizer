@@ -306,3 +306,5 @@ SAFE_TAGS = [
     "sleeveless",
     "food",
 ]
+
+FREQUENT_SAFETY_TAGS = sorted(set(EXPLICIT_TAGS + QUESTIONABLE_TAGS + SAFE_TAGS))

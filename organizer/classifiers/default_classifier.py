@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-from organizer.classifiers.classifier import Classifier
+from classifiers.classifier import Classifier
 
 
 class DefaultClassifier(Classifier):
