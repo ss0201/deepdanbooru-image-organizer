@@ -19,11 +19,12 @@ def main():
         description="Predict classification based on tags."
     )
     parser.add_argument("project_dir")
-    parser.add_argument("--input_dirs", nargs="+", required=False)
+    parser.add_argument("--input-dirs", nargs="+", required=False)
     parser.add_argument("--output", default=".", dest="output_dir")
     parser.add_argument("--dataframe", required=False)
-
     args = parser.parse_args()
+
+    os.makedirs(args.output_dir, exist_ok=True)
 
     if args.dataframe:
         df: pd.DataFrame = pd.read_pickle(args.dataframe)

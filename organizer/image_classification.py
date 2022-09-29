@@ -35,6 +35,8 @@ def get_classifier(
 
     if model == "tree":
         return DecisionTreeClassifier(model_paths[0])
+    if model == "forest":
+        return DecisionTreeClassifier(model_paths[0])
     if model == "dnn":
         return DnnClassifier(model_paths)
 

@@ -2,9 +2,8 @@ import argparse
 import os
 import pickle
 
-import graphviz
 import pandas as pd
-from sklearn import tree
+from sklearn import ensemble
 
 from data import dataframe
 from util.frequent_safety_tags import FREQUENT_SAFETY_TAGS
@@ -39,35 +38,23 @@ def main():
 
     print("Creating model...")
     classifier = create_model(df, args.max_depth, args.min_leaf, args.ccp_alpha)
-    export_model(classifier, df, args.output_dir)
+    export_model(classifier, args.output_dir)
 
     print("Done.")
 
 
 def create_model(
     df: pd.DataFrame, max_depth: int, min_samples_leaf: int, ccp_alpha: float
-) -> tree.DecisionTreeClassifier:
-    classifier = tree.DecisionTreeClassifier(
+) -> ensemble.RandomForestClassifier:
+    classifier = ensemble.RandomForestClassifier(
         max_depth=max_depth, min_samples_leaf=min_samples_leaf, ccp_alpha=ccp_alpha
     )
     return classifier.fit(df.drop(columns=[CLASS_COLUMN]).to_numpy(), df[CLASS_COLUMN])
 
 
-def export_model(
-    classifier: tree.DecisionTreeClassifier, df: pd.DataFrame, output_dir: str
-):
-    with open(os.path.join(output_dir, "decision_tree.pkl"), "wb") as f:
+def export_model(classifier: ensemble.RandomForestClassifier, output_dir: str):
+    with open(os.path.join(output_dir, "random_forest.pkl"), "wb") as f:
         pickle.dump(classifier, f)
-
-    dot_data = tree.export_graphviz(
-        classifier,
-        feature_names=df.columns.drop(CLASS_COLUMN),
-        class_names=classifier.classes_,
-        filled=True,
-        special_characters=True,
-    )
-    graph = graphviz.Source(dot_data)
-    graph.render(outfile=os.path.join(output_dir, "decision_tree.png"), cleanup=True)
 
 
 if __name__ == "__main__":
