@@ -20,12 +20,18 @@ def main():
     parser.add_argument("output_dir")
     parser.add_argument("--model", required=False)
     parser.add_argument("--model-paths", nargs="+", required=False)
+    parser.add_argument("--parallel", type=int, default=16)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
     classifier = get_classifier(args.model, args.model_paths)
     process_images(
-        args.project_dir, args.input_dir, args.output_dir, args.dry_run, classifier
+        args.project_dir,
+        args.input_dir,
+        args.output_dir,
+        args.parallel,
+        args.dry_run,
+        classifier,
     )
 
 
@@ -49,6 +55,7 @@ def process_images(
     project_dir: str,
     input_dir: str,
     output_dir: str,
+    parallel: int,
     dry_run: bool,
     classifier: Classifier,
 ) -> None:
@@ -57,7 +64,7 @@ def process_images(
     )
 
     print("Processing images...")
-    with ThreadPoolExecutor(16) as executor:
+    with ThreadPoolExecutor(parallel) as executor:
         futures = [
             executor.submit(
                 process_image,
