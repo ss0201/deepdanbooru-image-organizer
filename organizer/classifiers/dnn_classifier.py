@@ -22,5 +22,5 @@ class DnnClassifier(Classifier):
             for tag, reliability in evaluation_dict.items()
             if tag in FREQUENT_SAFETY_TAGS
         }
-        predictions = self.model.predict(input_dict)[0]
+        predictions = self.model(input_dict)[0]
         return self.classes[np.argmax(predictions)]
