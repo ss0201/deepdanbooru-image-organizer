@@ -1,4 +1,4 @@
-git+https://github.com/KichangKim/DeepDanbooru.git@edf73df#egg=deepdanbooru
+git+https://github.com/KichangKim/DeepDanbooru.git@edf73df#egg=deepdanbooru[tensorflow]
 graphviz==0.20.1
 keras==2.10.0
 numpy==1.21.5
