@@ -1,12 +1,14 @@
 import argparse
 import os
 import shutil
-from typing import Union
+from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Union
 
 from classifiers import Classifier, DefaultClassifier
 from classifiers.decision_tree_classifier import DecisionTreeClassifier
 from classifiers.dnn_classifier import DnnClassifier
 from util import dd_adapter
+from util.print_buffer import PrintBuffer
 
 
 def main():
@@ -54,17 +56,46 @@ def process_images(
         project_dir, input_dir, True
     )
 
-    print("Evaluating...")
-    for input_image_path in input_image_paths:
-        evaluations = dd_adapter.evaluate_image(input_image_path, model, tags, 0)
-        evaluation_dict = dict(evaluations)
-        image_name = os.path.basename(input_image_path)
-        print(f"* {image_name}")
-        classification = classifier.get_classification(evaluation_dict)
-        print(f"Class: {classification}")
-        if not dry_run:
-            copy_image(input_image_path, output_dir, classification)
-        print()
+    print("Processing images...")
+    with ThreadPoolExecutor(16) as executor:
+        futures = [
+            executor.submit(
+                process_image,
+                input_image_path,
+                model,
+                tags,
+                output_dir,
+                dry_run,
+                classifier,
+            )
+            for input_image_path in input_image_paths
+        ]
+        for future in futures:
+            _ = future.result()  # call result() so that exceptions are raised
+
+
+def process_image(
+    input_image_path: str,
+    model: Any,
+    tags: list[str],
+    output_dir: str,
+    dry_run: bool,
+    classifier: Classifier,
+) -> str:
+    print_buffer = PrintBuffer()
+    evaluations = dd_adapter.evaluate_image(input_image_path, model, tags, 0)
+    evaluation_dict = dict(evaluations)
+
+    image_name = os.path.basename(input_image_path)
+    print_buffer.add(f"* {image_name}")
+
+    classification = classifier.get_classification(evaluation_dict, print_buffer)
+    print_buffer.add(f"Class: {classification}\n")
+
+    if not dry_run:
+        copy_image(input_image_path, output_dir, classification)
+
+    print_buffer.print()
 
 
 def copy_image(input_image_path: str, output_dir: str, classification: str):

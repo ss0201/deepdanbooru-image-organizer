@@ -1,14 +1,18 @@
 from collections import namedtuple
 
+from util.print_buffer import PrintBuffer
+
 from classifiers.classifier import Classifier
 
 
 class DefaultClassifier(Classifier):
-    def get_classification(self, evaluation_dict: dict[str, int]) -> str:
+    def get_classification(
+        self, evaluation_dict: dict[str, int], print_buffer: PrintBuffer
+    ) -> str:
         cls = Class()
 
         explicit_keys = [Keyword.NUDE]
-        if self.contains_filtered_keys(explicit_keys, evaluation_dict):
+        if self.contains_filtered_keys(explicit_keys, evaluation_dict, print_buffer):
             cls.try_set(Keyword.EXPLICIT)
 
         questionable_keys = [
@@ -18,7 +22,9 @@ class DefaultClassifier(Classifier):
             Keyword.LEOTARD,
             Keyword.ASS,
         ]
-        if self.contains_filtered_keys(questionable_keys, evaluation_dict):
+        if self.contains_filtered_keys(
+            questionable_keys, evaluation_dict, print_buffer
+        ):
             cls.try_set(Keyword.QUESTIONABLE)
 
         rating_keys = [Keyword.EXPLICIT, Keyword.QUESTIONABLE, Keyword.SAFE]
@@ -28,7 +34,7 @@ class DefaultClassifier(Classifier):
             for key in rating_keys
         ]
         sorted_ratings = sorted(ratings, key=lambda x: x.reliability, reverse=True)
-        print(sorted_ratings)
+        print_buffer.add(sorted_ratings)
 
         best_rating = sorted_ratings[0]
         if best_rating.reliability < 0.5:
@@ -39,12 +45,15 @@ class DefaultClassifier(Classifier):
         return cls.value
 
     def contains_filtered_keys(
-        self, keys: list[str], evaluation_dict: dict[str, int]
+        self,
+        keys: list[str],
+        evaluation_dict: dict[str, int],
+        print_buffer: PrintBuffer,
     ) -> bool:
         for key in keys:
             reliability = evaluation_dict[key]
             if reliability > 0.5:
-                print(f"'{key}' {reliability}")
+                print_buffer.add(f"'{key}' {reliability}")
                 return True
         return False
 
