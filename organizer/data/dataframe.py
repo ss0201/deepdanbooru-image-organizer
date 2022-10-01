@@ -17,7 +17,7 @@ def create(
     print("Predicting tags...")
     rows = np.empty((0, 2 + len(limited_tags)))
     for image_dir in image_dirs:
-        classification = os.path.basename(image_dir)
+        classification = os.path.basename(os.path.normpath(image_dir))
         image_paths = dd_adapter.load_images(image_dir, True)
         for image_path in image_paths:
             image_name = os.path.basename(image_path)
