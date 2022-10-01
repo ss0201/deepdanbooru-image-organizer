@@ -22,10 +22,8 @@ def create(
         for image_path in image_paths:
             image_name = os.path.basename(image_path)
             evaluations = dd_adapter.evaluate_image(image_path, model, project_tags, 0)
-            limited_evaluations = sorted(
-                filter(lambda x: x[0] in limited_tags, evaluations)
-            )
-            tag_reliabilities = [x[1] for x in limited_evaluations]
+            evaluation_dict = dict(evaluations)
+            tag_reliabilities = [evaluation_dict[x] for x in limited_tags]
             row = [image_name, classification] + tag_reliabilities
             rows = np.append(rows, [row], axis=0)
 
