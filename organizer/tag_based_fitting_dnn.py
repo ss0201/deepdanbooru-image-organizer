@@ -8,8 +8,7 @@ from keras import layers
 from keras.layers import IntegerLookup, Normalization, StringLookup
 from tensorflow import keras
 
-from data import dataframe
-from util.frequent_safety_tags import FREQUENT_SAFETY_TAGS
+from data import dataframe, tag_list
 
 CLASS_COLUMN = "class"
 
@@ -19,25 +18,25 @@ def main():
         description="Predict classification based on tags."
     )
     parser.add_argument("project_dir")
-    parser.add_argument("--input-dirs", nargs="+", required=False)
+    parser.add_argument("--tags", nargs="+", required=True)
+    parser.add_argument("--input", nargs="+", required=False, dest="input_dirs")
     parser.add_argument("--output", default=".", dest="output_dir")
     parser.add_argument("--dataframe", required=False)
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
+    tags = tag_list.read(args.tags)
 
     if args.dataframe:
         df: pd.DataFrame = pd.read_pickle(args.dataframe)
     else:
         print("Creating dataframe...")
-        df = dataframe.create(
-            args.project_dir, args.input_dirs, FREQUENT_SAFETY_TAGS, CLASS_COLUMN
-        )
+        df = dataframe.create(args.project_dir, args.input_dirs, tags, CLASS_COLUMN)
         print(df)
         dataframe.export(df, args.output_dir)
 
     classes = df[CLASS_COLUMN].unique().tolist()
-    model = create_dnn_model(df, FREQUENT_SAFETY_TAGS, classes)
+    model = create_dnn_model(df, tags, classes)
     export_model(model, classes, args.output_dir)
 
     print("Done.")
