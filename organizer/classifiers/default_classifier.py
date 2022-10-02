@@ -19,7 +19,7 @@ class DefaultClassifier(Classifier):
 
     def get_classification(
         self,
-        evaluation_dict: dict[str, int],
+        evaluation_dict: dict[str, float],
         tags: Iterable[str],
         print_buffer: PrintBuffer,
     ) -> str:
@@ -61,7 +61,7 @@ class DefaultClassifier(Classifier):
     def contains_filtered_keys(
         self,
         keys: list[str],
-        evaluation_dict: dict[str, int],
+        evaluation_dict: dict[str, float],
         print_buffer: PrintBuffer,
     ) -> bool:
         for key in keys:

@@ -23,7 +23,7 @@ class Classifier(ABC):
     @abstractmethod
     def get_classification(
         self,
-        evaluation_dict: dict[str, int],
+        evaluation_dict: dict[str, float],
         tags: Iterable[str],
         print_buffer: PrintBuffer,
     ) -> str:

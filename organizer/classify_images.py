@@ -80,7 +80,7 @@ def process_image(
     output_dir: str,
     dry_run: bool,
     classifier: Classifier,
-) -> str:
+) -> None:
     print_buffer = PrintBuffer()
     evaluations = dd_adapter.evaluate_image(input_image_path, dd_model, dd_tags, 0)
     evaluation_dict = dict(evaluations)

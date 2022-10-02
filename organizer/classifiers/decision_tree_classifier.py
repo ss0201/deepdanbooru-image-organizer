@@ -13,7 +13,8 @@ from classifiers.classifier import Classifier
 
 class DecisionTreeClassifier(Classifier):
     model: tree.DecisionTreeClassifier
-    feature_names:Iterable[str]
+    feature_names: Iterable[str]
+    classes: list[str]
 
     def create_model(self, df: pd.DataFrame, tags: Iterable[str], **kwargs) -> None:
         classifier = tree.DecisionTreeClassifier(
@@ -24,7 +25,8 @@ class DecisionTreeClassifier(Classifier):
         self.model = classifier.fit(
             df.drop(columns=[self.CLASS_COLUMN]).to_numpy(), df[self.CLASS_COLUMN]
         )
-        self.feature_names=df.columns.drop(self.CLASS_COLUMN)
+        self.feature_names = df.columns.drop(self.CLASS_COLUMN)
+        self.classes = df[self.CLASS_COLUMN].unique().tolist()
 
     def load_model(self, paths: Union[list[str], None]) -> None:
         if paths is None:
@@ -40,7 +42,7 @@ class DecisionTreeClassifier(Classifier):
         dot_data: str = tree.export_graphviz(
             self.model,
             feature_names=self.feature_names,
-            class_names=self.model.classes_,
+            class_names=self.classes,
             filled=True,
             special_characters=True,
         )
@@ -51,7 +53,7 @@ class DecisionTreeClassifier(Classifier):
 
     def get_classification(
         self,
-        evaluation_dict: dict[str, int],
+        evaluation_dict: dict[str, float],
         tags: Iterable[str],
         print_buffer: PrintBuffer,
     ) -> str:
