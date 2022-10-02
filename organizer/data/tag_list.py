@@ -1,7 +1,7 @@
 from typing import Iterable
 
 
-def read(paths: list[str]) -> list[str]:
+def read(paths: Iterable[str]) -> list[str]:
     tags = set()
     for path in paths:
         with open(path, "r") as file:

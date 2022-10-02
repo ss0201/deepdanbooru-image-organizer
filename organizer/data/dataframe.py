@@ -8,8 +8,8 @@ from util import dd_adapter
 
 def create(
     project_dir: str,
-    image_dirs: list[str],
-    limited_tags: Iterable[str],
+    image_dirs: Iterable[str],
+    limited_tags: list[str],
     class_column: str,
 ) -> pd.DataFrame:
     model, project_tags = dd_adapter.load_project(project_dir, True)

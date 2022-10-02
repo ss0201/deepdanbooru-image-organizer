@@ -4,10 +4,7 @@ import shutil
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Union
 
-from classifiers import Classifier, DefaultClassifier
-from classifiers.decision_tree_classifier import DecisionTreeClassifier
-from classifiers.dnn_classifier import DnnClassifier
-from classifiers.random_forest_classifier import RandomForestClassifier
+from classifiers import Classifier, classifier_factory
 from data import tag_list
 from util import dd_adapter
 from util.print_buffer import PrintBuffer
@@ -20,39 +17,23 @@ def main():
     parser.add_argument("project_dir")
     parser.add_argument("input_dir")
     parser.add_argument("output_dir")
-    parser.add_argument("--tags", nargs="+", required=True, dest="tag_paths")
+    parser.add_argument("--tags", nargs="+", required=True)
     parser.add_argument("--model", required=False)
     parser.add_argument("--model-paths", nargs="+", required=False)
     parser.add_argument("--parallel", type=int, default=16)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
-    classifier = get_classifier(args.model, args.model_paths)
     process_images(
         args.project_dir,
         args.input_dir,
         args.output_dir,
-        args.tag_paths,
+        args.tags,
+        args.model,
+        args.model_paths,
         args.parallel,
         args.dry_run,
-        classifier,
     )
-
-
-def get_classifier(
-    model: Union[str, None], model_paths: Union[list[str], None]
-) -> Classifier:
-    if model is None:
-        return DefaultClassifier()
-
-    if model == "tree":
-        return DecisionTreeClassifier(model_paths[0])
-    if model == "forest":
-        return RandomForestClassifier(model_paths[0])
-    if model == "dnn":
-        return DnnClassifier(model_paths)
-
-    raise Exception(f"Invalid model: {model}.")
 
 
 def process_images(
@@ -60,14 +41,17 @@ def process_images(
     input_dir: str,
     output_dir: str,
     tag_paths: str,
+    model_name: str,
+    model_paths: Union[list[str], None],
     parallel: int,
     dry_run: bool,
-    classifier: Classifier,
 ) -> None:
     dd_model, dd_tags, input_image_paths = dd_adapter.load_project_and_images(
         project_dir, input_dir, True
     )
     classifier_tags = tag_list.read(tag_paths)
+    classifier = classifier_factory.get_classifier(model_name)
+    classifier.load_model(model_paths)
 
     print("Processing images...")
     with ThreadPoolExecutor(parallel) as executor:
