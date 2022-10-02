@@ -7,6 +7,7 @@ from typing import Any, Union
 from classifiers import Classifier, DefaultClassifier
 from classifiers.decision_tree_classifier import DecisionTreeClassifier
 from classifiers.dnn_classifier import DnnClassifier
+from classifiers.random_forest_classifier import RandomForestClassifier
 from data import tag_list
 from util import dd_adapter
 from util.print_buffer import PrintBuffer
@@ -47,7 +48,7 @@ def get_classifier(
     if model == "tree":
         return DecisionTreeClassifier(model_paths[0])
     if model == "forest":
-        return DecisionTreeClassifier(model_paths[0])
+        return RandomForestClassifier(model_paths[0])
     if model == "dnn":
         return DnnClassifier(model_paths)
 

@@ -11,7 +11,7 @@ from classifiers.classifier import Classifier
 class RandomForestClassifier(Classifier):
     model: ensemble.RandomForestClassifier
 
-    def __init__(self, model_path) -> None:
+    def __init__(self, model_path: str) -> None:
         super().__init__()
         with open(model_path, "rb") as f:
             self.model = pickle.load(f)
