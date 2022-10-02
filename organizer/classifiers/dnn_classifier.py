@@ -1,7 +1,8 @@
+from typing import Iterable
+
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from util.frequent_safety_tags import FREQUENT_SAFETY_TAGS
 from util.print_buffer import PrintBuffer
 
 from classifiers.classifier import Classifier
@@ -18,12 +19,15 @@ class DnnClassifier(Classifier):
             self.classes = [x.strip() for x in f.readlines()]
 
     def get_classification(
-        self, evaluation_dict: dict[str, int], print_buffer: PrintBuffer
+        self,
+        evaluation_dict: dict[str, int],
+        tags: Iterable[str],
+        print_buffer: PrintBuffer,
     ) -> str:
         input_dict = {
             tag: tf.convert_to_tensor([reliability])
             for tag, reliability in evaluation_dict.items()
-            if tag in FREQUENT_SAFETY_TAGS
+            if tag in tags
         }
         predictions = self.model(input_dict)[0]
         return self.classes[np.argmax(predictions)]

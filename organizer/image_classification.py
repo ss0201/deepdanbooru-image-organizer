@@ -7,6 +7,7 @@ from typing import Any, Union
 from classifiers import Classifier, DefaultClassifier
 from classifiers.decision_tree_classifier import DecisionTreeClassifier
 from classifiers.dnn_classifier import DnnClassifier
+from data import tag_list
 from util import dd_adapter
 from util.print_buffer import PrintBuffer
 
@@ -18,6 +19,7 @@ def main():
     parser.add_argument("project_dir")
     parser.add_argument("input_dir")
     parser.add_argument("output_dir")
+    parser.add_argument("--tags", nargs="+", required=True, dest="tag_paths")
     parser.add_argument("--model", required=False)
     parser.add_argument("--model-paths", nargs="+", required=False)
     parser.add_argument("--parallel", type=int, default=16)
@@ -29,6 +31,7 @@ def main():
         args.project_dir,
         args.input_dir,
         args.output_dir,
+        args.tag_paths,
         args.parallel,
         args.dry_run,
         classifier,
@@ -55,13 +58,15 @@ def process_images(
     project_dir: str,
     input_dir: str,
     output_dir: str,
+    tag_paths: str,
     parallel: int,
     dry_run: bool,
     classifier: Classifier,
 ) -> None:
-    model, tags, input_image_paths = dd_adapter.load_project_and_images(
+    dd_model, dd_tags, input_image_paths = dd_adapter.load_project_and_images(
         project_dir, input_dir, True
     )
+    classifier_tags = tag_list.read(tag_paths)
 
     print("Processing images...")
     with ThreadPoolExecutor(parallel) as executor:
@@ -69,8 +74,9 @@ def process_images(
             executor.submit(
                 process_image,
                 input_image_path,
-                model,
-                tags,
+                dd_model,
+                dd_tags,
+                classifier_tags,
                 output_dir,
                 dry_run,
                 classifier,
@@ -83,20 +89,23 @@ def process_images(
 
 def process_image(
     input_image_path: str,
-    model: Any,
-    tags: list[str],
+    dd_model: Any,
+    dd_tags: list[str],
+    classifier_tags: list[str],
     output_dir: str,
     dry_run: bool,
     classifier: Classifier,
 ) -> str:
     print_buffer = PrintBuffer()
-    evaluations = dd_adapter.evaluate_image(input_image_path, model, tags, 0)
+    evaluations = dd_adapter.evaluate_image(input_image_path, dd_model, dd_tags, 0)
     evaluation_dict = dict(evaluations)
 
     image_name = os.path.basename(input_image_path)
     print_buffer.add(f"* {image_name}")
 
-    classification = classifier.get_classification(evaluation_dict, print_buffer)
+    classification = classifier.get_classification(
+        evaluation_dict, classifier_tags, print_buffer
+    )
     print_buffer.add(f"Class: {classification}\n")
 
     if not dry_run:
