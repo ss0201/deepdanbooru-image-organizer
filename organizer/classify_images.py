@@ -2,6 +2,7 @@ import argparse
 import os
 import shutil
 from concurrent.futures import ThreadPoolExecutor
+from threading import BoundedSemaphore
 from typing import Any, Union
 
 from classifiers import Classifier, classifier_factory
@@ -55,6 +56,7 @@ def process_images(
 
     print("Processing images...")
     with ThreadPoolExecutor(parallel) as executor:
+        dd_semaphore = BoundedSemaphore()
         futures = [
             executor.submit(
                 process_image,
@@ -65,6 +67,7 @@ def process_images(
                 output_dir,
                 dry_run,
                 classifier,
+                dd_semaphore,
             )
             for input_image_path in input_image_paths
         ]
@@ -80,9 +83,11 @@ def process_image(
     output_dir: str,
     dry_run: bool,
     classifier: Classifier,
+    dd_semaphore: BoundedSemaphore,
 ) -> None:
     print_buffer = PrintBuffer()
-    evaluations = dd_adapter.evaluate_image(input_image_path, dd_model, dd_tags, 0)
+    with dd_semaphore:
+        evaluations = dd_adapter.evaluate_image(input_image_path, dd_model, dd_tags, 0)
     evaluation_dict = dict(evaluations)
 
     image_name = os.path.basename(input_image_path)
