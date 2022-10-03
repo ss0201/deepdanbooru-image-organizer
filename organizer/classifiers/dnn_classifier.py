@@ -1,12 +1,14 @@
+# type: ignore
+
 import os
 from typing import Iterable, Union
 
+import keras
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 from keras import layers
 from keras.layers import Normalization
-from tensorflow import keras
 from util.print_buffer import PrintBuffer
 
 from classifiers.classifier import Classifier
