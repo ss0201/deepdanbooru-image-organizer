@@ -1,37 +1,41 @@
 import argparse
 import collections
 
-import pandas as pd
-
+from data import tag_list
 from util import dd_adapter
 
 
 def main():
     parser = argparse.ArgumentParser(description="Count tags used in images.")
     parser.add_argument("project_dir")
-    parser.add_argument("input_dir")
+    parser.add_argument("--input", nargs="+")
+    parser.add_argument("--output", default=".")
     parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument("--limit", type=int, default=100)
     args = parser.parse_args()
 
-    count_tags(args.project_dir, args.input_dir, args.threshold, args.limit)
+    common_tags = get_common_tags(
+        args.project_dir, args.input, args.threshold, args.limit
+    )
+    print(common_tags)
+    tag_list.write(args.output, [x[0] for x in common_tags])
 
 
-def count_tags(
-    project_dir: str, image_dir: list[str], threshold: float, limit: int
-) -> pd.DataFrame:
+def get_common_tags(
+    project_dir: str, image_dirs: list[str], threshold: float, limit: int
+) -> list[tuple[str, int]]:
     model, tags = dd_adapter.load_project(project_dir, True)
-    image_paths = dd_adapter.load_images(image_dir, True)
+    image_paths = []
+    for image_dir in image_dirs:
+        image_paths.extend(dd_adapter.load_images(image_dir, True))
 
     print("Counting tags...")
-    tag_counter = collections.Counter()
+    tag_counter: collections.Counter[str] = collections.Counter()
     for image_path in image_paths:
         evaluations = dd_adapter.evaluate_image(image_path, model, tags, threshold)
         tag_counter.update([x[0] for x in evaluations])
 
-    most_common = tag_counter.most_common(limit)
-    print(most_common)
-    print([x[0] for x in most_common])
+    return tag_counter.most_common(limit)
 
 
 if __name__ == "__main__":

@@ -11,4 +11,4 @@ def read(paths: Iterable[str]) -> list[str]:
 
 def write(path: str, tags: Iterable[str]) -> None:
     with open(path, "w") as file:
-        file.writelines(tags)
+        file.write("\n".join(tags))
