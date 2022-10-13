@@ -57,6 +57,7 @@ def process_images(
     print("Processing images...")
     with ThreadPoolExecutor(parallel) as executor:
         dd_semaphore = BoundedSemaphore()
+        classifier_semaphore = BoundedSemaphore()
         futures = [
             executor.submit(
                 process_image,
@@ -68,6 +69,7 @@ def process_images(
                 dry_run,
                 classifier,
                 dd_semaphore,
+                classifier_semaphore,
             )
             for input_image_path in input_image_paths
         ]
@@ -84,18 +86,20 @@ def process_image(
     dry_run: bool,
     classifier: Classifier,
     dd_semaphore: BoundedSemaphore,
+    classifier_semaphore: BoundedSemaphore,
 ) -> None:
     print_buffer = PrintBuffer()
     with dd_semaphore:
         evaluations = dd_adapter.evaluate_image(input_image_path, dd_model, dd_tags, 0)
-    evaluation_dict = dict(evaluations)
+        evaluation_dict = dict(evaluations)
 
     image_name = os.path.basename(input_image_path)
     print_buffer.add(f"* {image_name}")
 
-    classification = classifier.get_classification(
-        evaluation_dict, classifier_tags, print_buffer
-    )
+    with classifier_semaphore:
+        classification = classifier.get_classification(
+            evaluation_dict, classifier_tags, print_buffer
+        )
     print_buffer.add(f"Class: {classification}\n")
 
     if not dry_run:
