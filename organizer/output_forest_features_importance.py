@@ -11,10 +11,10 @@ def main():
     parser.add_argument("model")
     args = parser.parse_args()
 
-    create_model(args.model)
+    output_features_importance(args.model)
 
 
-def create_model(model_path: str):
+def output_features_importance(model_path: str):
     model: ensemble.RandomForestClassifier = pd.read_pickle(model_path)
 
     importances = [
