@@ -3,8 +3,6 @@ import argparse
 import pandas as pd
 from sklearn import ensemble
 
-CLASS_COLUMN = "class"
-
 
 def main():
     parser = argparse.ArgumentParser(
@@ -13,7 +11,7 @@ def main():
     parser.add_argument("model")
     args = parser.parse_args()
 
-    create_model(args.model,)
+    create_model(args.model)
 
 
 def create_model(model_path: str):
