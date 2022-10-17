@@ -20,7 +20,7 @@ class RandomForestClassifier(Classifier):
             ccp_alpha=kwargs.get("ccp_alpha", 0),
         )
         self.model = classifier.fit(
-            df.drop(columns=[self.CLASS_COLUMN]).to_numpy(), df[self.CLASS_COLUMN]
+            df.drop(columns=[self.CLASS_COLUMN]), df[self.CLASS_COLUMN]
         )
 
     def load_model(self, paths: Union[list[str], None]) -> None:
