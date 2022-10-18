@@ -1,6 +1,6 @@
 import argparse
 import os
-from typing import Iterable
+from typing import Iterable, Union
 
 import pandas as pd
 
@@ -20,6 +20,7 @@ def main():
     parser.add_argument("--output", default=".")
     parser.add_argument("--model")
     parser.add_argument("--dataframe")
+    parser.add_argument("--cache")
     parser.add_argument(
         "--max-depth", type=int, default=None, help="Only for tree based models."
     )
@@ -38,6 +39,7 @@ def main():
         args.output,
         args.model,
         args.dataframe,
+        args.cache,
         max_depth=args.max_depth,
         min_leaf=args.min_leaf,
         ccp_alpha=args.ccp_alpha,
@@ -49,21 +51,24 @@ def create_model(
     tag_paths: Iterable[str],
     input_dirs: Iterable[str],
     output_dir: str,
-    model_name: str,
-    dataframe_path: str,
+    model_name: Union[str, None],
+    dataframe_path: Union[str, None],
+    cache_path: Union[str, None],
     **kwargs
 ):
     os.makedirs(output_dir, exist_ok=True)
     tags = tag_list.read(tag_paths)
 
     if dataframe_path:
+        print("Loading dataframe...")
         df: pd.DataFrame = pd.read_pickle(dataframe_path)
     else:
         print("Creating dataframe...")
-        df = dataframe.create(project_dir, input_dirs, tags, CLASS_COLUMN)
+        df = dataframe.create(project_dir, input_dirs, cache_path, tags, CLASS_COLUMN)
         print(df)
         dataframe.export(df, output_dir)
 
+    print("Creating classification model...")
     classifier = classifier_factory.get_classifier(model_name)
     classifier.create_model(df, tags, **kwargs)
     classifier.export_model(output_dir)
