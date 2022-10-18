@@ -23,7 +23,7 @@ def output_features_importance(model_path: str):
             model.feature_importances_, model.feature_names_in_  # type: ignore
         )
     ]
-    for importance, name in sorted(importances, reverse=True):
+    for importance, name in sorted(importances):
         print(f"{name:30} {importance:10.5f}")
 
 
