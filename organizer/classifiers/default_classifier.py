@@ -18,10 +18,7 @@ class DefaultClassifier(Classifier):
         pass
 
     def get_classification(
-        self,
-        evaluation_dict: dict[str, float],
-        tags: Iterable[str],
-        print_buffer: PrintBuffer,
+        self, evaluation_dict: dict[str, float], print_buffer: PrintBuffer,
     ) -> str:
         cls = Class()
 

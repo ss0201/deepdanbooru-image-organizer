@@ -59,11 +59,9 @@ class DnnClassifier(Classifier):
             self.classes = f.read().splitlines()
 
     def get_classification(
-        self,
-        evaluation_dict: dict[str, float],
-        tags: Iterable[str],
-        print_buffer: PrintBuffer,
+        self, evaluation_dict: dict[str, float], print_buffer: PrintBuffer,
     ) -> str:
+        tags = [x.name for x in self.model.inputs]
         input_dict = {
             tag: tf.convert_to_tensor([reliability])
             for tag, reliability in evaluation_dict.items()

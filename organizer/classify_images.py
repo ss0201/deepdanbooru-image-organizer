@@ -6,7 +6,6 @@ from threading import BoundedSemaphore
 from typing import Any, Union
 
 from classifiers import Classifier, classifier_factory
-from data import tag_list
 from util import dd_adapter
 from util.print_buffer import PrintBuffer
 
@@ -18,7 +17,6 @@ def main():
     parser.add_argument("project_dir")
     parser.add_argument("input_dir")
     parser.add_argument("output_dir")
-    parser.add_argument("--tags", nargs="+", required=True)
     parser.add_argument("--model", required=False)
     parser.add_argument("--model-paths", nargs="+", required=False)
     parser.add_argument("--parallel", type=int, default=16)
@@ -29,7 +27,6 @@ def main():
         args.project_dir,
         args.input_dir,
         args.output_dir,
-        args.tags,
         args.model,
         args.model_paths,
         args.parallel,
@@ -41,7 +38,6 @@ def process_images(
     project_dir: str,
     input_dir: str,
     output_dir: str,
-    tag_paths: str,
     model_name: str,
     model_paths: Union[list[str], None],
     parallel: int,
@@ -50,7 +46,6 @@ def process_images(
     dd_model, dd_tags, input_image_paths = dd_adapter.load_project_and_images(
         project_dir, input_dir, True
     )
-    classifier_tags = tag_list.read(tag_paths)
     classifier = classifier_factory.get_classifier(model_name)
     classifier.load_model(model_paths)
 
@@ -64,7 +59,6 @@ def process_images(
                 input_image_path,
                 dd_model,
                 dd_tags,
-                classifier_tags,
                 output_dir,
                 dry_run,
                 classifier,
@@ -81,7 +75,6 @@ def process_image(
     input_image_path: str,
     dd_model: Any,
     dd_tags: list[str],
-    classifier_tags: list[str],
     output_dir: str,
     dry_run: bool,
     classifier: Classifier,
@@ -97,9 +90,7 @@ def process_image(
     print_buffer.add(f"* {image_name}")
 
     with classifier_semaphore:
-        classification = classifier.get_classification(
-            evaluation_dict, classifier_tags, print_buffer
-        )
+        classification = classifier.get_classification(evaluation_dict, print_buffer)
     print_buffer.add(f"Class: {classification}\n")
 
     if not dry_run:

@@ -2,7 +2,6 @@ import os
 import pickle
 from typing import Iterable, Union
 
-import numpy as np
 import pandas as pd
 from sklearn import ensemble
 from util.print_buffer import PrintBuffer
@@ -35,11 +34,8 @@ class RandomForestClassifier(Classifier):
             pickle.dump(self.model, f)
 
     def get_classification(
-        self,
-        evaluation_dict: dict[str, float],
-        tags: Iterable[str],
-        print_buffer: PrintBuffer,
+        self, evaluation_dict: dict[str, float], print_buffer: PrintBuffer,
     ) -> str:
-        evaluations = [evaluation_dict[x] for x in tags]
-        evaluations = np.reshape(evaluations, (1, -1))
+        tags = self.model.feature_names_in_  # type: ignore
+        evaluations = pd.DataFrame([evaluation_dict[tag] for tag in tags], index=tags).T
         return self.model.predict(evaluations)[0]
