@@ -34,8 +34,8 @@ def main():
     )
     parser.add_argument(
         "--cache",
-        help="Tag prediction cache file path. If not specified, \
-            a new cache will be created.",
+        help="Tag prediction cache file path. If the file does not exist, \
+            a new file will be created. If not specified, do not use cache.",
     )
     parser.add_argument(
         "--max-depth",
