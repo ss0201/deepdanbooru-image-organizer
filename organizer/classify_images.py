@@ -14,13 +14,27 @@ def main():
     parser = argparse.ArgumentParser(
         description="Organize images into directories using deepdanbooru prediction."
     )
-    parser.add_argument("project_dir")
-    parser.add_argument("input_dir")
-    parser.add_argument("output_dir")
-    parser.add_argument("--model", required=False)
-    parser.add_argument("--model-paths", nargs="+", required=False)
-    parser.add_argument("--parallel", type=int, default=16)
-    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("project_dir", help="DeepDanbooru project directory")
+    parser.add_argument("input_dir", help="Input image directory")
+    parser.add_argument("output_dir", help="Output image directory")
+    parser.add_argument(
+        "--model",
+        required=False,
+        help="Classification model name. Available: [forest, tree, dnn]",
+    )
+    parser.add_argument(
+        "--model-paths",
+        nargs="+",
+        required=False,
+        help="Classification model paths. Required if --model is specified. \
+            forest: [model_path], tree: [model_path], dnn: [model_path, tag_path]",
+    )
+    parser.add_argument(
+        "--parallel", type=int, default=16, help="Number of parallel jobs. Default: 16"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Run without copying files to output dir"
+    )
     args = parser.parse_args()
 
     process_images(

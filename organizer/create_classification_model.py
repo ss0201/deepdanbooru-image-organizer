@@ -12,23 +12,49 @@ CLASS_COLUMN = "class"
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Create a model to predict classification by danbooru tags."
+        description="Create a model for classifying images \
+            using deepdanbooru tag predictions."
     )
-    parser.add_argument("project_dir")
-    parser.add_argument("--tags", nargs="+")
-    parser.add_argument("--input", nargs="+")
-    parser.add_argument("--output", default=".")
-    parser.add_argument("--model")
-    parser.add_argument("--dataframe")
-    parser.add_argument("--cache")
+    parser.add_argument("project_dir", help="DeepDanbooru project directory")
     parser.add_argument(
-        "--max-depth", type=int, default=None, help="Only for tree based models."
+        "--tags", nargs="+", help="Tag list files. Duplicate tags will be merged."
     )
+    parser.add_argument("--input", nargs="+", help="Input image directories.")
     parser.add_argument(
-        "--min-leaf", type=int, default=1, help="Only for tree based models."
+        "--output",
+        default=".",
+        help="Output directory for model and dataframe. Default: current directory",
     )
     parser.add_argument(
-        "--ccp-alpha", type=float, default=0, help="Only for tree based models."
+        "--model", help="Classification model name. Available: [forest, tree, dnn]"
+    )
+    parser.add_argument(
+        "--dataframe",
+        help="Dataframe file path. If not specified, a new dataframe will be created.",
+    )
+    parser.add_argument(
+        "--cache",
+        help="Tag prediction cache file path. If not specified, \
+            a new cache will be created.",
+    )
+    parser.add_argument(
+        "--max-depth",
+        type=int,
+        default=None,
+        help="Maximum tree depth. Only for tree based models. Default: None",
+    )
+    parser.add_argument(
+        "--min-leaf",
+        type=int,
+        default=1,
+        help="Minimum number of samples in a leaf. \
+            Only for tree based models. Default: 1",
+    )
+    parser.add_argument(
+        "--ccp-alpha",
+        type=float,
+        default=0,
+        help="Complexity parameter. Only for tree based models. Default: 0",
     )
     args = parser.parse_args()
 

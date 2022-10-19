@@ -8,7 +8,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Output the most important features of a random forest model."
     )
-    parser.add_argument("model")
+    parser.add_argument("model", help="Random forest model file path")
     args = parser.parse_args()
 
     output_features_importance(args.model)

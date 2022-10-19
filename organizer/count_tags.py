@@ -7,11 +7,18 @@ from util import dd_adapter
 
 def main():
     parser = argparse.ArgumentParser(description="Count tags used in images.")
-    parser.add_argument("project_dir")
-    parser.add_argument("--input", nargs="+")
-    parser.add_argument("--output", default=".")
-    parser.add_argument("--threshold", type=float, default=0.5)
-    parser.add_argument("--limit", type=int, default=100)
+    parser.add_argument("project_dir", help="DeepDanbooru project directory")
+    parser.add_argument("--input", nargs="+", help="Input image directories")
+    parser.add_argument("--output", default=".", help="Output directory for tag list")
+    parser.add_argument(
+        "--threshold",
+        type=float,
+        default=0.5,
+        help="Tag confidence threshold. Default: 0.5",
+    )
+    parser.add_argument(
+        "--limit", type=int, default=100, help="Tag number limit. Default: 100"
+    )
     args = parser.parse_args()
 
     common_tags = get_common_tags(
