@@ -19,7 +19,7 @@ class EvaluationCache:
     def get(self, key: str) -> Union[EvaluationDictType, None]:
         return self.memory.get(key)
 
-    def set(self, key: str, value: EvaluationDictType):
+    def set(self, key: str, value: EvaluationDictType) -> None:
         self.memory[key] = value
         self.is_dirty = True
 
@@ -52,7 +52,7 @@ class DDCache:
             if cache.is_dirty:
                 self.__save_cache_file(cache, os.path.join(self.cache_dir, cache_key))
 
-    def __get_cache(self, cache_key):
+    def __get_cache(self, cache_key) -> EvaluationCache:
         cache = self.cache_collection.get(cache_key)
         if cache is None:
             cache = self.__load_cache_file(os.path.join(self.cache_dir, cache_key))
