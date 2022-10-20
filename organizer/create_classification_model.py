@@ -34,8 +34,8 @@ def main():
     )
     parser.add_argument(
         "--cache",
-        help="Tag prediction cache file path. If the file does not exist, \
-            a new file will be created. If not specified, do not use cache.",
+        help="Tag prediction cache directory. If the directory does not exist, \
+            a new directory will be created. If not specified, do not use cache.",
     )
     parser.add_argument(
         "--max-depth",
@@ -79,7 +79,7 @@ def create_model(
     output_dir: str,
     model_name: Union[str, None],
     dataframe_path: Union[str, None],
-    cache_path: Union[str, None],
+    cache_dir: Union[str, None],
     **kwargs
 ):
     os.makedirs(output_dir, exist_ok=True)
@@ -90,7 +90,7 @@ def create_model(
         df: pd.DataFrame = pd.read_pickle(dataframe_path)
     else:
         print("Creating dataframe...")
-        df = dataframe.create(project_dir, input_dirs, cache_path, tags, CLASS_COLUMN)
+        df = dataframe.create(project_dir, input_dirs, cache_dir, tags, CLASS_COLUMN)
         print(df)
         dataframe.export(df, output_dir)
 
