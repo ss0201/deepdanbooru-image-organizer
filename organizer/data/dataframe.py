@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from util import dd_adapter
 
-from data.dd_cache import DDCache, EvaluationDictType
+from data.dd_cache import DDCache
 
 
 def create(
@@ -34,10 +34,6 @@ def create(
             row = [image_name, classification] + tag_reliabilities
             rows = np.append(rows, [row], axis=0)
 
-    if cache is not None:
-        print("Saving tag prediction cache...")
-        cache.save()
-
     print("Converting to dataframe...")
     df = pd.DataFrame(
         rows[:, 1:], index=rows[:, 0], columns=[class_column] + limited_tags
@@ -49,16 +45,20 @@ def create(
 
 def evaluate(
     model: Any, project_tags: list[str], image_path: str, cache: Union[DDCache, None],
-) -> EvaluationDictType:
+) -> dict[str, float]:
     if cache is not None:
-        evaluation_dict = cache.get_cached_evaluations(image_path)
-        if evaluation_dict:
-            return evaluation_dict
+        evaluations = cache.get_cached_evaluations(image_path)
+        if evaluations:
+            return {
+                tag: evaluation for tag, evaluation in zip(project_tags, evaluations)
+            }
 
     evaluations = dd_adapter.evaluate_image(image_path, model, project_tags, 0)
     evaluation_dict = dict(evaluations)
     if cache is not None:
-        cache.cache_evaluations(image_path, evaluation_dict)
+        cache.cache_evaluations(
+            image_path, [float(evaluation_dict[x]) for x in project_tags]
+        )
     return evaluation_dict
 
 
