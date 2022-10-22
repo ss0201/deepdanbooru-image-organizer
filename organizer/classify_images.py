@@ -6,6 +6,7 @@ from threading import BoundedSemaphore
 from typing import Any, Union
 
 from classifiers import Classifier, classifier_factory
+from data.dd_cache import DDCache, create_cache
 from data.evaluation import evaluate_image
 from util import dd_adapter
 from util.print_buffer import PrintBuffer
@@ -31,6 +32,12 @@ def main():
             forest: [model_path], tree: [model_path], dnn: [model_path, tag_path]",
     )
     parser.add_argument(
+        "--cache",
+        help="Tag prediction cache file. If the file does not exist, \
+            a new file will be created. If not specified, do not use cache. \
+            Only works with --parallel=1.",
+    )
+    parser.add_argument(
         "--parallel", type=int, default=16, help="Number of parallel jobs. Default: 16"
     )
     parser.add_argument(
@@ -44,6 +51,7 @@ def main():
         args.output_dir,
         args.model,
         args.model_paths,
+        args.cache,
         args.parallel,
         args.dry_run,
     )
@@ -55,6 +63,7 @@ def process_images(
     output_dir: str,
     model_name: str,
     model_paths: Union[list[str], None],
+    cache_path: Union[str, None],
     parallel: int,
     dry_run: bool,
 ) -> None:
@@ -65,25 +74,39 @@ def process_images(
     classifier.load_model(model_paths)
 
     print("Processing images...")
-    with ThreadPoolExecutor(parallel) as executor:
-        dd_semaphore = BoundedSemaphore()
-        classifier_semaphore = BoundedSemaphore()
-        futures = [
-            executor.submit(
-                process_image,
+    if parallel == 1:
+        cache = create_cache(cache_path)
+        for input_image_path in input_image_paths:
+            process_image(
                 input_image_path,
                 dd_model,
                 dd_tags,
                 output_dir,
+                cache,
                 dry_run,
                 classifier,
-                dd_semaphore,
-                classifier_semaphore,
             )
-            for input_image_path in input_image_paths
-        ]
-        for future in futures:
-            _ = future.result()  # call result() so that exceptions are raised
+    else:
+        with ThreadPoolExecutor(parallel) as executor:
+            dd_semaphore = BoundedSemaphore()
+            classifier_semaphore = BoundedSemaphore()
+            futures = [
+                executor.submit(
+                    process_image,
+                    input_image_path,
+                    dd_model,
+                    dd_tags,
+                    output_dir,
+                    None,
+                    dry_run,
+                    classifier,
+                    dd_semaphore,
+                    classifier_semaphore,
+                )
+                for input_image_path in input_image_paths
+            ]
+            for future in futures:
+                _ = future.result()  # call result() so that exceptions are raised
 
 
 def process_image(
@@ -91,20 +114,29 @@ def process_image(
     dd_model: Any,
     dd_tags: list[str],
     output_dir: str,
+    cache: Union[DDCache, None],
     dry_run: bool,
     classifier: Classifier,
-    dd_semaphore: BoundedSemaphore,
-    classifier_semaphore: BoundedSemaphore,
+    dd_semaphore: Union[BoundedSemaphore, None] = None,
+    classifier_semaphore: Union[BoundedSemaphore, None] = None,
 ) -> None:
     print_buffer = PrintBuffer()
-    with dd_semaphore:
-        evaluation_dict = evaluate_image(input_image_path, dd_model, dd_tags)
+
+    evaluation_dict = evaluate_image(
+        input_image_path, dd_model, dd_tags, cache=cache, semaphore=dd_semaphore
+    )
 
     image_name = os.path.basename(input_image_path)
     print_buffer.add(f"* {image_name}")
 
-    with classifier_semaphore:
+    if classifier_semaphore is not None:
+        classifier_semaphore.acquire()
+    try:
         classification = classifier.get_classification(evaluation_dict, print_buffer)
+    finally:
+        if classifier_semaphore is not None:
+            classifier_semaphore.release()
+
     print_buffer.add(f"Class: {classification}\n")
 
     if not dry_run:
