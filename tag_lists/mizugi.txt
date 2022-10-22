@@ -1,0 +1,17 @@
+shirt
+bare_shoulders
+criss-cross_halter
+kneehighs
+no_panties
+skirt
+halterneck
+black_bikini
+bikini
+side-tie_bikini
+white_bikini
+swimsuit
+string_bikini
+one-piece_swimsuit
+school_swimsuit
+bikini_under_clothes
+highleg_swimsuit
