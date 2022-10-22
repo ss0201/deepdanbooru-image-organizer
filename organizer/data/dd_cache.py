@@ -47,3 +47,11 @@ class DDCache:
             for chunk in iter(lambda: f.read(4096), b""):
                 md5.update(chunk)
         return md5.hexdigest()
+
+
+def create_cache(cache_dir: Union[str, None]) -> Union[DDCache, None]:
+    if cache_dir:
+        print("Loading tag prediction cache...")
+        return DDCache(cache_dir)
+    else:
+        return None

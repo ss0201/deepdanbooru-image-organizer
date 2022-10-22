@@ -1,11 +1,12 @@
 import os
-from typing import Any, Iterable, Union
+from typing import Iterable, Union
 
 import numpy as np
 import pandas as pd
 from util import dd_adapter
 
-from data.dd_cache import DDCache
+from data.dd_cache import create_cache
+from data.evaluation import evaluate_image
 
 
 def create(
@@ -16,11 +17,7 @@ def create(
     class_column: str,
 ) -> pd.DataFrame:
     model, project_tags = dd_adapter.load_project(project_dir, True)
-
-    cache = None
-    if cache_dir:
-        print("Loading tag prediction cache...")
-        cache = DDCache(cache_dir)
+    cache = create_cache(cache_dir)
 
     print("Predicting tags...")
     rows = np.empty((0, 2 + len(limited_tags)))
@@ -29,7 +26,9 @@ def create(
         image_paths = dd_adapter.load_images(image_dir, True)
         for image_path in image_paths:
             image_name = os.path.basename(image_path)
-            evaluation_dict = evaluate(model, project_tags, image_path, cache)
+            evaluation_dict = evaluate_image(
+                image_path, model, project_tags, cache=cache
+            )
             tag_reliabilities = [evaluation_dict[x] for x in limited_tags]
             row = [image_name, classification] + tag_reliabilities
             rows = np.append(rows, [row], axis=0)
@@ -41,25 +40,6 @@ def create(
     df: pd.DataFrame = df.apply(pd.to_numeric, errors="ignore")  # type: ignore
     df = df.astype({"class": pd.StringDtype()})
     return df
-
-
-def evaluate(
-    model: Any, project_tags: list[str], image_path: str, cache: Union[DDCache, None],
-) -> dict[str, float]:
-    if cache is not None:
-        evaluations = cache.get_cached_evaluations(image_path)
-        if evaluations:
-            return {
-                tag: evaluation for tag, evaluation in zip(project_tags, evaluations)
-            }
-
-    evaluations = dd_adapter.evaluate_image(image_path, model, project_tags, 0)
-    evaluation_dict = dict(evaluations)
-    if cache is not None:
-        cache.cache_evaluations(
-            image_path, [float(evaluation_dict[x]) for x in project_tags]
-        )
-    return evaluation_dict
 
 
 def export(df: pd.DataFrame, output_dir: str) -> None:

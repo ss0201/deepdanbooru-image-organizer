@@ -6,6 +6,7 @@ from threading import BoundedSemaphore
 from typing import Any, Union
 
 from classifiers import Classifier, classifier_factory
+from data.evaluation import evaluate_image
 from util import dd_adapter
 from util.print_buffer import PrintBuffer
 
@@ -97,8 +98,7 @@ def process_image(
 ) -> None:
     print_buffer = PrintBuffer()
     with dd_semaphore:
-        evaluations = dd_adapter.evaluate_image(input_image_path, dd_model, dd_tags, 0)
-        evaluation_dict = dict(evaluations)
+        evaluation_dict = evaluate_image(input_image_path, dd_model, dd_tags)
 
     image_name = os.path.basename(input_image_path)
     print_buffer.add(f"* {image_name}")
