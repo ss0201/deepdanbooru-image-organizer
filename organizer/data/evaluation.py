@@ -26,9 +26,7 @@ def evaluate_image(
     if semaphore is not None:
         semaphore.acquire()
     try:
-        evaluations = dd_adapter.evaluate_image(
-            image_path, model, project_tags, threshold
-        )
+        evaluations = dd_adapter.evaluate_image(image_path, model, project_tags, 0)
         evaluation_dict = dict(evaluations)
     finally:
         if semaphore is not None:
@@ -38,4 +36,8 @@ def evaluate_image(
         cache.cache_evaluations(
             image_path, [float(evaluation_dict[x]) for x in project_tags]
         )
-    return evaluation_dict
+    return {
+        tag: evaluation
+        for tag, evaluation in evaluation_dict.items()
+        if evaluation >= threshold
+    }
