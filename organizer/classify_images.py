@@ -22,14 +22,16 @@ def main():
     parser.add_argument(
         "--model",
         required=False,
-        help="Classification model name. Available: [forest, tree, dnn]",
+        help="Classification model name. \
+            Available: [default, single, forest, tree, dnn]",
     )
     parser.add_argument(
         "--model-paths",
         nargs="+",
         required=False,
         help="Classification model paths. Required if --model is specified. \
-            forest: [model_path], tree: [model_path], dnn: [model_path, tag_path]",
+            forest: [model_path], tree: [model_path], dnn: [model_path, tag_path], \
+            others: not required",
     )
     parser.add_argument(
         "--cache",
@@ -43,6 +45,27 @@ def main():
     parser.add_argument(
         "--dry-run", action="store_true", help="Run without copying files to output dir"
     )
+    parser.add_argument(
+        "--tag",
+        required=False,
+        help="Tag to be used for classification. Only required if --model=single.",
+    )
+    parser.add_argument(
+        "--threshold",
+        type=float,
+        required=False,
+        help="Threshold to be used for classification. \
+            Only required if --model=single.",
+    )
+    parser.add_argument(
+        "--classes",
+        nargs=2,
+        required=False,
+        help="Classes to classify into. \
+            Classified into the first class if tag evaluation >= threshold; \
+            otherwise classified into the second class. \
+            Only required if --model=single.",
+    )
     args = parser.parse_args()
 
     process_images(
@@ -54,6 +77,9 @@ def main():
         args.cache,
         args.parallel,
         args.dry_run,
+        tag=args.tag,
+        threshold=args.threshold,
+        classes=args.classes,
     )
 
 
@@ -66,12 +92,14 @@ def process_images(
     cache_path: Union[str, None],
     parallel: int,
     dry_run: bool,
+    **kwargs,
 ) -> None:
     dd_model, dd_tags, input_image_paths = dd_adapter.load_project_and_images(
         project_dir, input_dir, True
     )
     classifier = classifier_factory.get_classifier(model_name)
     classifier.load_model(model_paths)
+    classifier.set_parameters(**kwargs)
 
     print("Processing images...")
     if parallel == 1:

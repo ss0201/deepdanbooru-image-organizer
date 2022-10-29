@@ -1,24 +1,13 @@
 from collections import namedtuple
-from typing import Iterable, Union
 
-import pandas as pd
 from util.print_buffer import PrintBuffer
 
 from classifiers.classifier import Classifier
 
 
 class DefaultClassifier(Classifier):
-    def create_model(self, df: pd.DataFrame, tags: Iterable[str], **kwargs) -> None:
-        return None
-
-    def export_model(self, output_dir: str) -> None:
-        pass
-
-    def load_model(self, path: Union[list[str], None]) -> None:
-        pass
-
     def get_classification(
-        self, evaluation_dict: dict[str, float], print_buffer: PrintBuffer,
+        self, evaluation_dict: dict[str, float], print_buffer: PrintBuffer
     ) -> str:
         cls = Class()
 

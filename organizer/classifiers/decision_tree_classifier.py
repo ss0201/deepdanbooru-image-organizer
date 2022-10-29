@@ -51,7 +51,7 @@ class DecisionTreeClassifier(Classifier):
         )
 
     def get_classification(
-        self, evaluation_dict: dict[str, float], print_buffer: PrintBuffer,
+        self, evaluation_dict: dict[str, float], print_buffer: PrintBuffer
     ) -> str:
         tags = self.model.feature_names_in_  # type: ignore
         evaluations = pd.DataFrame([evaluation_dict[tag] for tag in tags], index=tags).T
